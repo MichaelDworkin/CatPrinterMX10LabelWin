@@ -35,6 +35,7 @@
             Status = new Label();
             numericUpDown1 = new NumericUpDown();
             ComboBoxFonts = new ComboBox();
+            checkBox1 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             SuspendLayout();
@@ -85,16 +86,16 @@
             Status.Location = new Point(0, 428);
             Status.Name = "Status";
             Status.RightToLeft = RightToLeft.No;
-            Status.Size = new Size(800, 22);
+            Status.Size = new Size(1028, 22);
             Status.TabIndex = 4;
             Status.Text = "Status";
             // 
             // numericUpDown1
             // 
             numericUpDown1.AllowDrop = true;
-            numericUpDown1.Location = new Point(638, 46);
+            numericUpDown1.Location = new Point(629, 102);
             numericUpDown1.Name = "numericUpDown1";
-            numericUpDown1.Size = new Size(150, 27);
+            numericUpDown1.Size = new Size(209, 27);
             numericUpDown1.TabIndex = 5;
             numericUpDown1.Value = new decimal(new int[] { 12, 0, 0, 0 });
             // 
@@ -102,16 +103,27 @@
             // 
             ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
             ComboBoxFonts.FormattingEnabled = true;
-            ComboBoxFonts.Location = new Point(418, 168);
+            ComboBoxFonts.Location = new Point(629, 32);
             ComboBoxFonts.Name = "ComboBoxFonts";
             ComboBoxFonts.Size = new Size(209, 28);
             ComboBoxFonts.TabIndex = 6;
+            // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new Point(629, 164);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(80, 24);
+            checkBox1.TabIndex = 7;
+            checkBox1.Text = "Vertikal";
+            checkBox1.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1028, 450);
+            Controls.Add(checkBox1);
             Controls.Add(ComboBoxFonts);
             Controls.Add(numericUpDown1);
             Controls.Add(Status);
@@ -137,5 +149,6 @@
         private Label Status;
         private NumericUpDown numericUpDown1;
         private ComboBox ComboBoxFonts;
+        private CheckBox checkBox1;
     }
 }
