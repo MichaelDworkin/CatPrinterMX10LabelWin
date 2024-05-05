@@ -1,0 +1,141 @@
+﻿namespace Bitmap
+{
+    partial class Form1
+    {
+        /// <summary>
+        ///  Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        ///  Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        ///  Required method for Designer support - do not modify
+        ///  the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            pictureBox1 = new PictureBox();
+            button1 = new Button();
+            button2 = new Button();
+            label1 = new Label();
+            Status = new Label();
+            numericUpDown1 = new NumericUpDown();
+            ComboBoxFonts = new ComboBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
+            SuspendLayout();
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
+            pictureBox1.Location = new Point(12, 12);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(384, 384);
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(408, 32);
+            button1.Name = "button1";
+            button1.Size = new Size(198, 53);
+            button1.TabIndex = 1;
+            button1.Text = "Speichern";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
+            // button2
+            // 
+            button2.Location = new Point(408, 102);
+            button2.Name = "button2";
+            button2.Size = new Size(198, 49);
+            button2.TabIndex = 2;
+            button2.Text = "Print";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(483, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(82, 20);
+            label1.TabIndex = 3;
+            label1.Text = "Dateiname";
+            // 
+            // Status
+            // 
+            Status.BorderStyle = BorderStyle.Fixed3D;
+            Status.Dock = DockStyle.Bottom;
+            Status.Location = new Point(0, 428);
+            Status.Name = "Status";
+            Status.RightToLeft = RightToLeft.No;
+            Status.Size = new Size(800, 22);
+            Status.TabIndex = 4;
+            Status.Text = "Status";
+            // 
+            // numericUpDown1
+            // 
+            numericUpDown1.AllowDrop = true;
+            numericUpDown1.Location = new Point(638, 46);
+            numericUpDown1.Name = "numericUpDown1";
+            numericUpDown1.Size = new Size(150, 27);
+            numericUpDown1.TabIndex = 5;
+            numericUpDown1.Value = new decimal(new int[] { 12, 0, 0, 0 });
+            // 
+            // ComboBoxFonts
+            // 
+            ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
+            ComboBoxFonts.FormattingEnabled = true;
+            ComboBoxFonts.Location = new Point(418, 168);
+            ComboBoxFonts.Name = "ComboBoxFonts";
+            ComboBoxFonts.Size = new Size(209, 28);
+            ComboBoxFonts.TabIndex = 6;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(ComboBoxFonts);
+            Controls.Add(numericUpDown1);
+            Controls.Add(Status);
+            Controls.Add(label1);
+            Controls.Add(button2);
+            Controls.Add(button1);
+            Controls.Add(pictureBox1);
+            Name = "Form1";
+            Text = "Form1";
+            Load += Form1_Load;
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
+        }
+
+        #endregion
+
+        private PictureBox pictureBox1;
+        private Button button1;
+        private Button button2;
+        private Label label1;
+        private Label Status;
+        private NumericUpDown numericUpDown1;
+        private ComboBox ComboBoxFonts;
+    }
+}
