@@ -28,7 +28,7 @@ namespace Bitmap
         private void Form1_Load(object sender, EventArgs e)
         {
             //pictureBox1.Size = new Size(384, 384);
-            flag = new System.Drawing.Bitmap(384, 384);
+            flag = new System.Drawing.Bitmap(384, 192);
             Graphics flagGraphics = Graphics.FromImage(flag);
 
             flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
