@@ -30,7 +30,8 @@ namespace CatPrinter
             bmp.UnlockBits(data);
             return bmp;
         }
-        static async void PostAsync(Bitmap Bild)
+
+        static async void PostAsync(Bitmap Bild, Label statusLabel)
         {
             using (var client = new HttpClient())
             {
@@ -50,11 +51,11 @@ namespace CatPrinter
                 }
 
 
-                var response = client.PostAsync("http://catprinter.local/upload", formData);
+                var response =  await client.PostAsync("http://catprinter.local/upload", formData);
 
                 //response.Wait();
-
-              // response.Result.StatusCode.ToString();
+                
+                statusLabel.Text = response.StatusCode.ToString();
             }
         }
 
@@ -115,6 +116,8 @@ namespace CatPrinter
         private void button2_Click(object sender, EventArgs e)
         {
 
+            PostAsync(flag, Status);
+            /*
             using (var client = new HttpClient())
             {
                 var formData = new MultipartFormDataContent();
@@ -138,8 +141,10 @@ namespace CatPrinter
                 //response.Wait();
 
                 Status.Text = response.Result.StatusCode.ToString();
+            
                 // Process the response as needed
             }
+            */
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
