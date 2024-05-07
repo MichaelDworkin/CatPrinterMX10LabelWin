@@ -1,4 +1,4 @@
-namespace Bitmap
+namespace CatPrinter
 {
     internal static class Program
     {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace Bitmap
+namespace CatPrinter
 {
     public partial class Form1 : Form
     {
@@ -28,12 +28,13 @@ namespace Bitmap
         private void Form1_Load(object sender, EventArgs e)
         {
             //pictureBox1.Size = new Size(384, 384);
-            flag = new System.Drawing.Bitmap(384, 192);
+            flag = new Bitmap(384, 192);
             Graphics flagGraphics = Graphics.FromImage(flag);
 
             flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
             flagGraphics.TranslateTransform(32, 0);
             flagGraphics.RotateTransform(90);
+
             using (Font font1 = new Font("Times New Roman", 32, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 PointF pointF1 = new PointF(0, 0);

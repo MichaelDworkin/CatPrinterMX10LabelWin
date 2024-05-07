@@ -1,4 +1,4 @@
-﻿namespace Bitmap
+﻿namespace CatPrinter
 {
     partial class Form1
     {

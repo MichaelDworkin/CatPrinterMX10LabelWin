@@ -1,15 +1,21 @@
-﻿using System.Drawing.Imaging;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Bitmap
+namespace CatPrinter
 {
     public partial class Form1 : Form
     {
-        public static System.Drawing.Bitmap BitmapTo1Bpp(System.Drawing.Bitmap img)
+        public static Bitmap BitmapTo1Bpp(System.Drawing.Bitmap img)
         {
             int w = img.Width;
             int h = img.Height;
-            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(w, h, PixelFormat.Format1bppIndexed);
+           Bitmap bmp = new Bitmap(w, h, PixelFormat.Format1bppIndexed);
             BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format1bppIndexed);
             byte[] scan = new byte[(w + 7) / 8];
             for (int y = 0; y < h; y++)
