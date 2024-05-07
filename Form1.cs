@@ -8,6 +8,56 @@ namespace CatPrinter
 {
     public partial class Form1 : Form
     {
+
+        System.Drawing.Bitmap flag;
+        public static Bitmap BitmapTo1Bpp(System.Drawing.Bitmap img)
+        {
+            int w = img.Width;
+            int h = img.Height;
+            Bitmap bmp = new Bitmap(w, h, PixelFormat.Format1bppIndexed);
+            BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format1bppIndexed);
+            byte[] scan = new byte[(w + 7) / 8];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    if (x % 8 == 0) scan[x / 8] = 0;
+                    Color c = img.GetPixel(x, y);
+                    if (c.GetBrightness() >= 0.5) scan[x / 8] |= (byte)(0x80 >> (x % 8));
+                }
+                Marshal.Copy(scan, 0, (IntPtr)((long)data.Scan0 + data.Stride * y), scan.Length);
+            }
+            bmp.UnlockBits(data);
+            return bmp;
+        }
+        static async void PostAsync(Bitmap Bild)
+        {
+            using (var client = new HttpClient())
+            {
+                var formData = new MultipartFormDataContent();
+
+                // Add form fields
+                formData.Add(new StringContent("John Doe"), "username");
+                formData.Add(new StringContent("example@example.com"), "email");
+
+                // Add file
+                //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
+                using (var stream = new MemoryStream())
+                {
+                    Bild.Save(stream, ImageFormat.Bmp);
+                    var fileContent = new ByteArrayContent(stream.ToArray());
+                    formData.Add(fileContent, "avatar", "file.jpg");
+                }
+
+
+                var response = client.PostAsync("http://catprinter.local/upload", formData);
+
+                //response.Wait();
+
+              // response.Result.StatusCode.ToString();
+            }
+        }
+
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
         {
             var comboBox = (ComboBox)sender;
@@ -24,7 +74,7 @@ namespace CatPrinter
             ComboBoxFonts.DataSource = System.Drawing.FontFamily.Families.ToList();
         }
 
-        System.Drawing.Bitmap flag;
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             bool Vertical=false;
