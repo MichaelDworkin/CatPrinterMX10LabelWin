@@ -107,6 +107,8 @@
             ComboBoxFonts.Name = "ComboBoxFonts";
             ComboBoxFonts.Size = new Size(209, 28);
             ComboBoxFonts.TabIndex = 6;
+            ComboBoxFonts.Text = "fgdxh";
+            ComboBoxFonts.SelectedIndexChanged += ComboBoxFonts_SelectedIndexChanged;
             // 
             // checkBox1
             // 

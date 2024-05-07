@@ -23,24 +23,25 @@ namespace CatPrinter
             ComboBoxFonts.DrawItem += ComboBoxFonts_DrawItem;
             ComboBoxFonts.DataSource = System.Drawing.FontFamily.Families.ToList();
         }
-        
+
         System.Drawing.Bitmap flag;
         private void Form1_Load(object sender, EventArgs e)
         {
+            bool Vertical=false;
             //pictureBox1.Size = new Size(384, 384);
             flag = new Bitmap(384, 192);
             Graphics flagGraphics = Graphics.FromImage(flag);
 
             flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
-            flagGraphics.TranslateTransform(32, 0);
-            flagGraphics.RotateTransform(90);
-
-            using (Font font1 = new Font("Times New Roman", 32, FontStyle.Bold, GraphicsUnit.Pixel))
+            if (Vertical) flagGraphics.TranslateTransform(32, 0);
+            if (Vertical) flagGraphics.RotateTransform(90);
+            var fontFamily = (FontFamily)ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex];
+            using (Font font1 = new Font(fontFamily.Name.ToString(), 32, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 PointF pointF1 = new PointF(0, 0);
                 flagGraphics.DrawString("Hello Welt", font1, Brushes.Black, pointF1);
             }
-            flagGraphics.ResetTransform();
+            if (Vertical) flagGraphics.ResetTransform();
             pictureBox1.Image = BitmapTo1Bpp(flag); ;
         }
 
@@ -94,6 +95,18 @@ namespace CatPrinter
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void ComboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
+            if (fontFamily != null)
+            {
+                Status.Text = fontFamily.Name.ToString();
+                Form1_Load(sender, e);
+                
+            }
+            
         }
     }
 }
