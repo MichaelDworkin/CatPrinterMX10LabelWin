@@ -2,6 +2,7 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 
 namespace CatPrinter
@@ -10,6 +11,7 @@ namespace CatPrinter
     {
 
         System.Drawing.Bitmap flag;
+        HttpClient httpClient = new HttpClient();
         public static Bitmap BitmapTo1Bpp(System.Drawing.Bitmap img)
         {
             int w = img.Width;
@@ -31,16 +33,13 @@ namespace CatPrinter
             return bmp;
         }
 
-        static async void PostAsync(Bitmap Bild, Label statusLabel)
+        static async void PostAsync(Bitmap Bild, Label statusLabel, HttpClient client)
         {
-            using (var client = new HttpClient())
-            {
+            
                 var formData = new MultipartFormDataContent();
-
                 // Add form fields
-                formData.Add(new StringContent("John Doe"), "username");
-                formData.Add(new StringContent("example@example.com"), "email");
-
+                //formData.Add(new StringContent("John Doe"), "username");
+                //formData.Add(new StringContent("example@example.com"), "email");
                 // Add file
                 //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
                 using (var stream = new MemoryStream())
@@ -49,14 +48,21 @@ namespace CatPrinter
                     var fileContent = new ByteArrayContent(stream.ToArray());
                     formData.Add(fileContent, "avatar", "file.jpg");
                 }
-
-
-                var response =  await client.PostAsync("http://catprinter.local/upload", formData);
-
+                string httpResponseBody = "";
+                try
+                {
+                    var response =  await client.PostAsync("http://catprinter.local/upload", formData);
+                    response.EnsureSuccessStatusCode();
+                    httpResponseBody = await response.Content.ReadAsStringAsync();
+                }
+                catch (Exception ex)
+                {
+                    httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+                }
                 //response.Wait();
-                
-                statusLabel.Text = response.StatusCode.ToString();
-            }
+
+                statusLabel.Text = httpResponseBody;
+            
         }
 
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
@@ -116,7 +122,7 @@ namespace CatPrinter
         private void button2_Click(object sender, EventArgs e)
         {
 
-            PostAsync(flag, Status);
+            PostAsync(flag, Status, httpClient);
             /*
             using (var client = new HttpClient())
             {
