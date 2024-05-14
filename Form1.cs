@@ -68,7 +68,7 @@ namespace CatPrinter
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
         {
             var comboBox = (ComboBox)sender;
-            var fontFamily = (FontFamily)comboBox.Items[e.Index];
+            FontFamily? fontFamily = comboBox.Items[e.Index] as FontFamily;
             var font = new Font(fontFamily, comboBox.Font.SizeInPoints);
 
             e.DrawBackground();
