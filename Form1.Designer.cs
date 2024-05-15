@@ -139,6 +139,7 @@
             // 
             // pictureBox2
             // 
+            pictureBox2.BackColor = Color.White;
             pictureBox2.BorderStyle = BorderStyle.FixedSingle;
             pictureBox2.Location = new Point(12, 402);
             pictureBox2.Name = "pictureBox2";

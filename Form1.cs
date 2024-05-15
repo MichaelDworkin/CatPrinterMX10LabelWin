@@ -92,6 +92,8 @@ namespace CatPrinter
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            var bmp = new Bitmap(100, 100, PixelFormat.Format1bppIndexed);
+            pictureBox1.Image = bmp;
             /*
             bool Vertical=false;
             //pictureBox1.Size = new Size(384, 384);
@@ -187,8 +189,8 @@ namespace CatPrinter
             stringSize = e.Graphics.MeasureString(textBox1.Text, font1);
             if (Vertical) e.Graphics.ResetTransform();
 
-            //flag = new Bitmap((int)e.Graphics.VisibleClipBounds.Width, (int)e.Graphics.VisibleClipBounds.Height, e.Graphics);
-
+            flag = new Bitmap((int)e.Graphics.VisibleClipBounds.Width, (int)e.Graphics.VisibleClipBounds.Height, e.Graphics);
+          
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -227,7 +229,14 @@ namespace CatPrinter
 
         private void button3_Click(object sender, EventArgs e)
         {
-            pictureBox2.Image = BitmapTo1Bpp((Bitmap)pictureBox1.Image);
+            //pictureBox1.Image = Image.FromFile("C:\\Users\\MDworkin-PC\\Documents\\test.bmp");
+            pictureBox2.Image = BitmapTo1Bpp(new Bitmap(pictureBox1.Image));
+            //pictureBox2.Image = BitmapTo1Bpp(flag);
+            //var orig = pictureBox1.Image;
+            //pictureBox2.Image = new Bitmap(orig.Width, orig.Height,PixelFormat.Format32bppPArgb);
+            //var original = pictureBox1.Image;
+            //var rectangle = new Rectangle(0, 0, original.Width, original.Height);
+            //var bmp1bpp = original.Clone(rectangle, PixelFormat.Format1bppIndexed);
         }
     }
 }
