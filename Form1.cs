@@ -13,7 +13,7 @@ namespace CatPrinter
     public partial class Form1 : Form
     {
 
-        System.Drawing.Bitmap flag;
+        Bitmap flag = new Bitmap(384, 384);
         HttpClient httpClient = new HttpClient();
 
         bool Vertical = false;
@@ -39,6 +39,22 @@ namespace CatPrinter
             }
             bmp.UnlockBits(data);
             return bmp;
+        }
+
+        public void FlagRefresh()
+        {
+            Graphics flagGraphics = Graphics.FromImage(flag);
+           flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
+            
+           var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
+            Font font1 = new Font(fontFamily!.Name.ToString(), Convert.ToInt32(numericUpDown1.Value), FontStyle.Bold, GraphicsUnit.Pixel);
+             if (Vertical) flagGraphics.TranslateTransform(384, 0); 
+            if (Vertical) flagGraphics.RotateTransform(90);
+           
+            flagGraphics.DrawString(textBox1.Text, font1, Brushes.Black, textLocation);
+            if (Vertical) flagGraphics.ResetTransform();
+            stringSize = flagGraphics.MeasureString(textBox1.Text, font1);
+            pictureBox1.Image = BitmapTo1Bpp(flag);
         }
 
         static async void PostAsync(Bitmap Bild, Label statusLabel, HttpClient client)
@@ -77,7 +93,7 @@ namespace CatPrinter
         {
             var comboBox = (System.Windows.Forms.ComboBox)sender;
             FontFamily? fontFamily = comboBox.Items[e.Index] as FontFamily;
-            var font = new Font(fontFamily, comboBox.Font.SizeInPoints);
+            var font = new Font(fontFamily!, comboBox.Font.SizeInPoints);
 
             e.DrawBackground();
             e.Graphics.DrawString(font.Name, font, Brushes.Black, e.Bounds.X, e.Bounds.Y);
@@ -85,15 +101,16 @@ namespace CatPrinter
         public Form1()
         {
             InitializeComponent();
-            ComboBoxFonts.DrawItem += ComboBoxFonts_DrawItem;
+            ComboBoxFonts.DrawItem += ComboBoxFonts_DrawItem!;
             ComboBoxFonts.DataSource = System.Drawing.FontFamily.Families.ToList();
         }
 
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var bmp = new Bitmap(100, 100, PixelFormat.Format1bppIndexed);
-            pictureBox1.Image = bmp;
+            
+            // var bmp = new Bitmap(100, 100, PixelFormat.Format1bppIndexed);
+            //pictureBox1.Image = bmp;
             /*
             bool Vertical=false;
             //pictureBox1.Size = new Size(384, 384);
@@ -112,6 +129,9 @@ namespace CatPrinter
             if (Vertical) flagGraphics.ResetTransform();
             pictureBox1.Image = BitmapTo1Bpp(flag); 
             */
+
+
+            // pictureBox1.Image = flag;
 
         }
 
@@ -134,36 +154,7 @@ namespace CatPrinter
 
         private void button2_Click(object sender, EventArgs e)
         {
-
             PostAsync(flag, Status, httpClient);
-            /*
-            using (var client = new HttpClient())
-            {
-                var formData = new MultipartFormDataContent();
-
-                // Add form fields
-                formData.Add(new StringContent("John Doe"), "username");
-                formData.Add(new StringContent("example@example.com"), "email");
-
-                // Add file
-                //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
-                using (var stream = new MemoryStream())
-                {
-                    pictureBox1.Image.Save(stream, ImageFormat.Bmp);
-                    var fileContent = new ByteArrayContent(stream.ToArray());
-                    formData.Add(fileContent, "avatar", "file.jpg");
-                }
-
-
-                var response = client.PostAsync("http://catprinter.local/upload", formData);
-
-                //response.Wait();
-
-                Status.Text = response.Result.StatusCode.ToString();
-            
-                // Process the response as needed
-            }
-            */
         }
 
         private void ComboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
@@ -172,7 +163,7 @@ namespace CatPrinter
             if (fontFamily != null)
             {
                 Status.Text = fontFamily.Name.ToString();
-                pictureBox1.Refresh();
+                FlagRefresh();
 
             }
 
@@ -180,28 +171,18 @@ namespace CatPrinter
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.FillRectangle(Brushes.White, 0, 0, e.Graphics.VisibleClipBounds.Width, e.Graphics.VisibleClipBounds.Height);
-            if (Vertical) e.Graphics.TranslateTransform(32, 0);
-            if (Vertical) e.Graphics.RotateTransform(90);
-            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
-            Font font1 = new Font(fontFamily!.Name.ToString(), Convert.ToInt32(numericUpDown1.Value), FontStyle.Bold, GraphicsUnit.Pixel);
-            e.Graphics.DrawString(textBox1.Text, font1, Brushes.Black, textLocation);
-            stringSize = e.Graphics.MeasureString(textBox1.Text, font1);
-            if (Vertical) e.Graphics.ResetTransform();
-
-            flag = new Bitmap((int)e.Graphics.VisibleClipBounds.Width, (int)e.Graphics.VisibleClipBounds.Height, e.Graphics);
-          
+           
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Vertical = checkBox1.Checked;
-            pictureBox1.Refresh();
+            FlagRefresh();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            pictureBox1.Refresh();
+            FlagRefresh();
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -210,33 +191,17 @@ namespace CatPrinter
             textLocation = e.Location;
             textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
             textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
-            pictureBox1.Refresh();
+            FlagRefresh();
+
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            pictureBox1.Refresh();
+            FlagRefresh();
         }
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (!e.Button.HasFlag(MouseButtons.Left)) return;
-            textLocation = e.Location;
-            textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
-            textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
-            pictureBox1.Refresh();
-        }
+   
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            //pictureBox1.Image = Image.FromFile("C:\\Users\\MDworkin-PC\\Documents\\test.bmp");
-            pictureBox2.Image = BitmapTo1Bpp(new Bitmap(pictureBox1.Image));
-            //pictureBox2.Image = BitmapTo1Bpp(flag);
-            //var orig = pictureBox1.Image;
-            //pictureBox2.Image = new Bitmap(orig.Width, orig.Height,PixelFormat.Format32bppPArgb);
-            //var original = pictureBox1.Image;
-            //var rectangle = new Rectangle(0, 0, original.Width, original.Height);
-            //var bmp1bpp = original.Clone(rectangle, PixelFormat.Format1bppIndexed);
-        }
+   
     }
 }

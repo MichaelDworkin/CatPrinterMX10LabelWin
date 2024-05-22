@@ -37,11 +37,8 @@
             ComboBoxFonts = new ComboBox();
             checkBox1 = new CheckBox();
             textBox1 = new TextBox();
-            pictureBox2 = new PictureBox();
-            button3 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             SuspendLayout();
             // 
             // pictureBox1
@@ -54,7 +51,6 @@
             pictureBox1.TabStop = false;
             pictureBox1.Paint += pictureBox1_Paint;
             pictureBox1.MouseDown += pictureBox1_MouseDown;
-            pictureBox1.MouseMove += pictureBox1_MouseMove;
             // 
             // button1
             // 
@@ -89,7 +85,7 @@
             // 
             Status.BorderStyle = BorderStyle.Fixed3D;
             Status.Dock = DockStyle.Bottom;
-            Status.Location = new Point(0, 807);
+            Status.Location = new Point(0, 408);
             Status.Name = "Status";
             Status.RightToLeft = RightToLeft.No;
             Status.Size = new Size(1028, 22);
@@ -131,39 +127,18 @@
             // textBox1
             // 
             textBox1.Location = new Point(629, 32);
+            textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(209, 27);
+            textBox1.Size = new Size(209, 53);
             textBox1.TabIndex = 8;
             textBox1.Text = "Irgendwas 1234567890";
             textBox1.TextChanged += textBox1_TextChanged;
-            // 
-            // pictureBox2
-            // 
-            pictureBox2.BackColor = Color.White;
-            pictureBox2.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox2.Location = new Point(12, 402);
-            pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(384, 384);
-            pictureBox2.TabIndex = 9;
-            pictureBox2.TabStop = false;
-            // 
-            // button3
-            // 
-            button3.Location = new Point(417, 174);
-            button3.Name = "button3";
-            button3.Size = new Size(185, 43);
-            button3.TabIndex = 10;
-            button3.Text = "1 Bit";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1028, 829);
-            Controls.Add(button3);
-            Controls.Add(pictureBox2);
+            ClientSize = new Size(1028, 430);
             Controls.Add(textBox1);
             Controls.Add(checkBox1);
             Controls.Add(ComboBoxFonts);
@@ -178,7 +153,6 @@
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -194,7 +168,5 @@
         private ComboBox ComboBoxFonts;
         private CheckBox checkBox1;
         private TextBox textBox1;
-        private PictureBox pictureBox2;
-        private Button button3;
     }
 }
