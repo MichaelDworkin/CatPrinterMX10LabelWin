@@ -188,9 +188,20 @@ namespace CatPrinter
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             if (!e.Button.HasFlag(MouseButtons.Left)) return;
-            textLocation = e.Location;
-            textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
-            textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
+            
+            if (Vertical)
+            {
+                textLocation.Y = 384 - e.Location.X;
+                textLocation.X = e.Location.Y;
+            }
+            else
+            {
+                textLocation.X =  e.Location.X;
+                textLocation.Y = e.Location.Y;
+                //textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
+                //textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
+            }
+            
             FlagRefresh();
 
         }
