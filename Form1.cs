@@ -44,13 +44,13 @@ namespace CatPrinter
         public void FlagRefresh()
         {
             Graphics flagGraphics = Graphics.FromImage(flag);
-           flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
-            
-           var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
+            flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
+
+            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
             Font font1 = new Font(fontFamily!.Name.ToString(), Convert.ToInt32(numericUpDown1.Value), FontStyle.Bold, GraphicsUnit.Pixel);
-             if (Vertical) flagGraphics.TranslateTransform(384, 0); 
+            if (Vertical) flagGraphics.TranslateTransform(384, 0);
             if (Vertical) flagGraphics.RotateTransform(90);
-           
+
             flagGraphics.DrawString(textBox1.Text, font1, Brushes.Black, textLocation);
             if (Vertical) flagGraphics.ResetTransform();
             stringSize = flagGraphics.MeasureString(textBox1.Text, font1);
@@ -86,7 +86,31 @@ namespace CatPrinter
             //response.Wait();
 
             statusLabel.Text = httpResponseBody;
+        }
+        static async void PostAsyncFeed(int FeedZeilen, Label statusLabel, HttpClient client)
+        {
 
+            var formData = new MultipartFormDataContent();
+            // Add form fields
+            formData.Add(new StringContent("feed"), FeedZeilen.ToString());
+            //formData.Add(new StringContent("example@example.com"), "email");
+            // Add file
+            //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
+
+            string httpResponseBody = "";
+            try
+            {
+                var response =  await client.PostAsync("http://catprinter.local/befehl", formData);
+                response.EnsureSuccessStatusCode();
+                httpResponseBody = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+            }
+            //response.Wait();
+
+            statusLabel.Text = httpResponseBody;
         }
 
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
@@ -108,7 +132,7 @@ namespace CatPrinter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+
             // var bmp = new Bitmap(100, 100, PixelFormat.Format1bppIndexed);
             //pictureBox1.Image = bmp;
             /*
@@ -171,7 +195,7 @@ namespace CatPrinter
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-           
+
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -188,7 +212,7 @@ namespace CatPrinter
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             if (!e.Button.HasFlag(MouseButtons.Left)) return;
-            
+
             if (Vertical)
             {
                 textLocation.Y = 384 - e.Location.X;
@@ -196,12 +220,12 @@ namespace CatPrinter
             }
             else
             {
-                textLocation.X =  e.Location.X;
+                textLocation.X = e.Location.X;
                 textLocation.Y = e.Location.Y;
                 //textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
                 //textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
             }
-            
+
             FlagRefresh();
 
         }
@@ -211,8 +235,23 @@ namespace CatPrinter
             FlagRefresh();
         }
 
-   
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            label3.Text = trackBar1.Value.ToString();
+        }
 
-   
+        private void trackBar1_MouseUp(object sender, MouseEventArgs e)
+        {
+            Status.Text = trackBar1.Value.ToString();
+            PostAsyncFeed(trackBar1.Value, Status, httpClient);
+            timer1.Enabled = true;
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            trackBar1.Value = 0;
+            label3.Text = trackBar1.Value.ToString();
+            timer1.Enabled= false;  
+        }
     }
 }

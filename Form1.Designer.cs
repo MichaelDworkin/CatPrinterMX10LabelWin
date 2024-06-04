@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             pictureBox1 = new PictureBox();
             button1 = new Button();
             button2 = new Button();
@@ -37,8 +38,13 @@
             ComboBoxFonts = new ComboBox();
             checkBox1 = new CheckBox();
             textBox1 = new TextBox();
+            trackBar1 = new TrackBar();
+            timer1 = new System.Windows.Forms.Timer(components);
+            label2 = new Label();
+            label3 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
             // 
             // pictureBox1
@@ -88,14 +94,14 @@
             Status.Location = new Point(0, 408);
             Status.Name = "Status";
             Status.RightToLeft = RightToLeft.No;
-            Status.Size = new Size(1028, 22);
+            Status.Size = new Size(849, 22);
             Status.TabIndex = 4;
             Status.Text = "Status";
             // 
             // numericUpDown1
             // 
             numericUpDown1.AllowDrop = true;
-            numericUpDown1.Location = new Point(629, 202);
+            numericUpDown1.Location = new Point(629, 76);
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(209, 27);
             numericUpDown1.TabIndex = 5;
@@ -106,7 +112,7 @@
             // 
             ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
             ComboBoxFonts.FormattingEnabled = true;
-            ComboBoxFonts.Location = new Point(629, 157);
+            ComboBoxFonts.Location = new Point(629, 32);
             ComboBoxFonts.Name = "ComboBoxFonts";
             ComboBoxFonts.Size = new Size(209, 28);
             ComboBoxFonts.TabIndex = 6;
@@ -116,7 +122,7 @@
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(629, 249);
+            checkBox1.Location = new Point(629, 127);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(80, 24);
             checkBox1.TabIndex = 7;
@@ -126,19 +132,61 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(629, 32);
+            textBox1.Location = new Point(408, 177);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(209, 53);
+            textBox1.Size = new Size(239, 219);
             textBox1.TabIndex = 8;
             textBox1.Text = "Irgendwas 1234567890";
             textBox1.TextChanged += textBox1_TextChanged;
+            // 
+            // trackBar1
+            // 
+            trackBar1.AllowDrop = true;
+            trackBar1.Location = new Point(677, 177);
+            trackBar1.Maximum = 200;
+            trackBar1.Minimum = -200;
+            trackBar1.Name = "trackBar1";
+            trackBar1.Orientation = Orientation.Vertical;
+            trackBar1.RightToLeftLayout = true;
+            trackBar1.Size = new Size(56, 219);
+            trackBar1.TabIndex = 9;
+            trackBar1.TickFrequency = 10;
+            trackBar1.Scroll += trackBar1_Scroll;
+            trackBar1.MouseUp += trackBar1_MouseUp;
+            // 
+            // timer1
+            // 
+            timer1.Interval = 1000;
+            timer1.Tick += timer1_Tick;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(747, 183);
+            label2.Name = "label2";
+            label2.Size = new Size(69, 20);
+            label2.TabIndex = 10;
+            label2.Text = "Vorschub";
+            // 
+            // label3
+            // 
+            label3.BorderStyle = BorderStyle.FixedSingle;
+            label3.Location = new Point(747, 276);
+            label3.Name = "label3";
+            label3.Size = new Size(74, 24);
+            label3.TabIndex = 11;
+            label3.Text = "0";
+            label3.TextAlign = ContentAlignment.TopRight;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1028, 430);
+            ClientSize = new Size(849, 430);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(trackBar1);
             Controls.Add(textBox1);
             Controls.Add(checkBox1);
             Controls.Add(ComboBoxFonts);
@@ -149,10 +197,12 @@
             Controls.Add(button1);
             Controls.Add(pictureBox1);
             Name = "Form1";
-            Text = "Form1";
+            Tag = "Feed";
+            Text = "Cat Printer";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -168,5 +218,9 @@
         private ComboBox ComboBoxFonts;
         private CheckBox checkBox1;
         private TextBox textBox1;
+        private TrackBar trackBar1;
+        private System.Windows.Forms.Timer timer1;
+        private Label label2;
+        private Label label3;
     }
 }
