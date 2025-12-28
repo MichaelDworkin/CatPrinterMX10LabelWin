@@ -1,68 +1,266 @@
+﻿
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;               // Für .ToList()
 using System.Windows.Forms;
-using MX10ThermalPrinter;
+using MX10ThermalPrinter;       // Dein Drucker-Treiber
 
 namespace CatPrinter
 {
     public partial class Form1 : Form
     {
+        // --- Interne Bildrepräsentation (Druckbild) ---
+        // Wird immer mit Breite 384 gerendert, Höhe variabel.
         Bitmap flag = new Bitmap(384, 384);
+
+        // --- Druckerinstanz ---
         MX10Printer printer = new MX10Printer();
 
+        // --- Ausrichtung (horizontal/vertikal) ---
         bool Vertical = false;
+
+        // --- Position, an der der Text gezeichnet wird ---
         Point textLocation = new Point(0, 0);
+
+        // --- Größe des aktuell gemessenen Textes (für Bounding/Heuristik) ---
         SizeF stringSize;
 
-        public static Bitmap BitmapTo1Bpp(Bitmap img)
+        // --- Dragging-Zustand für flüssiges Verschieben ---
+        bool isDragging = false;
+        Point dragStartMouse;
+
+        // ============================================================
+        // 1-Bit-Konvertierung (schnell mit LockBits anstelle von GetPixel)
+        // ============================================================
+        public static Bitmap BitmapTo1Bpp(Bitmap src, byte threshold = 128)
         {
-            int w = img.Width;
-            int h = img.Height;
-            Bitmap bmp = new Bitmap(w, h, PixelFormat.Format1bppIndexed);
-            BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format1bppIndexed);
-            byte[] scan = new byte[(w + 7) / 8];
-            for (int y = 0; y < h; y++)
+            // Ziel: 1-Bit-Index-Bitmap, schwarz/weiß
+            int w = src.Width;
+            int h = src.Height;
+
+            // Erzeuge ein 1bpp-Bitmap
+            Bitmap dst = new Bitmap(w, h, PixelFormat.Format1bppIndexed);
+
+            // Quelle sperren (lesen) – wir nehmen 32bpp für einfachen Zugriff
+            Rectangle rect = new Rectangle(0, 0, w, h);
+            Bitmap src32 = src.PixelFormat == PixelFormat.Format32bppArgb ? src : new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+            if (!ReferenceEquals(src, src32))
             {
-                for (int x = 0; x < w; x++)
+                using (Graphics g = Graphics.FromImage(src32))
                 {
-                    if (x % 8 == 0) scan[x / 8] = 0;
-                    Color c = img.GetPixel(x, y);
-                    if (c.GetBrightness() >= 0.5) scan[x / 8] |= (byte)(0x80 >> (x % 8));
+                    g.DrawImage(src, rect);
                 }
-                System.Runtime.InteropServices.Marshal.Copy(scan, 0, (IntPtr)((long)data.Scan0 + data.Stride * y), scan.Length);
             }
-            bmp.UnlockBits(data);
+
+            BitmapData srcData = src32.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            BitmapData dstData = dst.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format1bppIndexed);
+
+            try
+            {
+                unsafe
+                {
+                    byte* srcScan0 = (byte*)srcData.Scan0;
+                    byte* dstScan0 = (byte*)dstData.Scan0;
+
+                    for (int y = 0; y < h; y++)
+                    {
+                        byte* srcRow = srcScan0 + y * srcData.Stride;
+                        byte* dstRow = dstScan0 + y * dstData.Stride;
+
+                        byte mask = 0x80;
+                        byte bVal = 0;
+
+                        for (int x = 0; x < w; x++)
+                        {
+                            int idx = x * 4;
+                            byte b = srcRow[idx + 0];
+                            byte g = srcRow[idx + 1];
+                            byte r = srcRow[idx + 2];
+
+                            // Einfache Helligkeits-Bewertung (Luma-Approximation)
+                            // Wertebereich 0..255 -> Schwelle (threshold)
+                            int gray = (r * 299 + g * 587 + b * 114) / 1000;
+                            bool isWhite = gray >= threshold;
+
+                            if (isWhite == false)
+                                bVal |= mask; // schwarzes Pixel setzen (1)
+
+                            mask >>= 1;
+
+                            if (mask == 0)
+                            {
+                                dstRow[x / 8] = bVal;
+                                mask = 0x80;
+                                bVal = 0;
+                            }
+                        }
+
+                        // Restbits am Zeilenende schreiben
+                        if (mask != 0x80)
+                        {
+                            dstRow[w / 8] = bVal;
+                            bVal = 0;
+                            mask = 0x80;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                src32.UnlockBits(srcData);
+                dst.UnlockBits(dstData);
+                if (!ReferenceEquals(src, src32))
+                    src32.Dispose();
+            }
+
+            return dst;
+        }
+
+        // ============================================================
+        // Rendering: Bild (384 x variable Höhe) erzeugen
+        // ============================================================
+        private Bitmap RenderFlag()
+        {
+            // 1) Schriftart aus ComboBox holen
+            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
+            using var font1 = new Font(fontFamily!.Name,
+                                       Convert.ToInt32(numericUpDown1.Value),
+                                       FontStyle.Bold,
+                                       GraphicsUnit.Pixel);
+
+            // 2) Ein erster "Messdurchlauf", um die Textgröße zu kennen
+            using (var tmp = new Bitmap(1, 1))
+            using (var gTmp = Graphics.FromImage(tmp))
+            {
+                stringSize = gTmp.MeasureString(textBox1.Text, font1);
+            }
+
+            // 3) Benötigte Inhaltshöhe abschätzen
+            //    - Horizontal: Höhe ≈ stringSize.Height
+            //    - Vertikal (90°): die Textbreite wird zur Höhe
+            int contentExtent = Vertical
+                                ? (int)Math.Ceiling(stringSize.Width)
+                                : (int)Math.Ceiling(stringSize.Height);
+
+            // 4) Höhe berechnen: Start oben (y=0), Text wächst nach unten
+            //    Wir erlauben Mindesthöhe 64, plus kleinen Puffer.
+            int margin = 8;
+            int height = Math.Max(64, textLocation.Y + contentExtent + margin);
+
+            // 5) Neues Bitmap mit Breite 384 und berechneter Höhe
+            var bmp = new Bitmap(384, height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.White);
+
+                // Vertikale Ausrichtung: Zeichenfläche um 90° drehen
+                if (Vertical)
+                {
+                    // 384 ist die feste Papierbreite -> nach Drehung als X-Offset nutzen
+                    g.TranslateTransform(384, 0);
+                    g.RotateTransform(90);
+                }
+
+                // Text zeichnen
+                g.DrawString(textBox1.Text, font1, Brushes.Black, textLocation);
+
+                // Transform zurücksetzen
+                if (Vertical) g.ResetTransform();
+            }
+
+            // Rückgabe: unbeschnittenes Bild (wird gleich unten beschnitten)
             return bmp;
         }
 
-        public void FlagRefresh()
+        // ============================================================
+        // Unten weiß wegschneiden (nur bedruckte Zeilen senden)
+        // ============================================================
+        private static Bitmap CropBottomWhite(Bitmap src)
         {
-            Graphics flagGraphics = Graphics.FromImage(flag);
-            flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
+            int width = src.Width;
+            int lastContentRow = -1;
 
-            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
-            Font font1 = new Font(fontFamily!.Name.ToString(), Convert.ToInt32(numericUpDown1.Value), FontStyle.Bold, GraphicsUnit.Pixel);
-            if (Vertical) flagGraphics.TranslateTransform(384, 0);
-            if (Vertical) flagGraphics.RotateTransform(90);
+            Rectangle rect = new Rectangle(0, 0, src.Width, src.Height);
+            BitmapData data = src.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            try
+            {
+                unsafe
+                {
+                    for (int y = src.Height - 1; y >= 0; y--)
+                    {
+                        byte* row = (byte*)data.Scan0 + y * data.Stride;
+                        bool allWhite = true;
 
-            flagGraphics.DrawString(textBox1.Text, font1, Brushes.Black, textLocation);
-            if (Vertical) flagGraphics.ResetTransform();
-            stringSize = flagGraphics.MeasureString(textBox1.Text, font1);
-            pictureBox1.Image = BitmapTo1Bpp(flag);
+                        for (int x = 0; x < width; x++)
+                        {
+                            int idx = x * 4;
+                            byte b = row[idx + 0];
+                            byte g = row[idx + 1];
+                            byte r = row[idx + 2];
+
+                            // absolut weiß?
+                            if (!(r == 255 && g == 255 && b == 255))
+                            {
+                                allWhite = false;
+                                break;
+                            }
+                        }
+
+                        if (!allWhite)
+                        {
+                            lastContentRow = y;
+                            break;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                src.UnlockBits(data);
+            }
+
+            int newHeight = Math.Max(1, lastContentRow + 1);
+            if (newHeight >= src.Height) return src; // nichts zu schneiden
+
+            var cropped = new Bitmap(width, newHeight, PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(cropped))
+            {
+                g.DrawImage(src,
+                    new Rectangle(0, 0, width, newHeight),
+                    new Rectangle(0, 0, width, newHeight),
+                    GraphicsUnit.Pixel);
+            }
+            return cropped;
         }
 
+        // ============================================================
+        // Anzeige-Aktualisierung (Rendern + Zuschneiden + Vorschau 1bpp)
+        // ============================================================
+        public void FlagRefresh()
+        {
+            var rendered = RenderFlag();               // variable Höhe
+            var cropped = CropBottomWhite(rendered);   // unten weiß weg
+            flag = cropped;                            // Druckbild aktualisieren
+
+            // Vorschau in 1bpp (schnell & sparsam)
+            pictureBox1.Image = BitmapTo1Bpp(flag);
+            pictureBox1.Invalidate();                  // neu zeichnen
+        }
+
+        // ============================================================
+        // Drucker-Verbindungslogik (wie gehabt, mit Status)
+        // ============================================================
         private async void ConnectToPrinter()
         {
             Status.Text = "Verbinde mit Drucker...";
             button2.Enabled = false;
             buttonConnect.Enabled = false;
-
             try
             {
                 // Versuche zuerst mit gespeicherter MAC zu verbinden
-                string? savedMac = Properties.Settings.Default.PrinterMac;
+                string? savedMac = CatPrinterLabel.Settings.Default.PrinterMac;
                 bool connected = false;
-
                 if (!string.IsNullOrEmpty(savedMac))
                 {
                     connected = await printer.ConnectByMacAsync(savedMac);
@@ -79,15 +277,15 @@ namespace CatPrinter
                     Status.Text = $"Verbunden mit {printer.DeviceName} ({printer.MacAddress})";
                     button2.Enabled = true;
                     buttonConnect.Text = "Trennen";
-                    
-                    // Speichere MAC-Adresse
+
+                    // MAC speichern
                     if (!string.IsNullOrEmpty(printer.MacAddress))
                     {
-                        Properties.Settings.Default.PrinterMac = printer.MacAddress;
-                        Properties.Settings.Default.Save();
+                        CatPrinterLabel.Settings.Default.PrinterMac = printer.MacAddress;
+                        CatPrinterLabel.Settings.Default.Save();
                     }
 
-                    // Setze Standard-Energie
+                    // Standard-Energie setzen
                     await printer.SetEnergyAsync(10000);
                 }
                 else
@@ -112,6 +310,9 @@ namespace CatPrinter
             buttonConnect.Enabled = true;
         }
 
+        // ============================================================
+        // Drucken: flag (zugeschnitten, variable Höhe) senden
+        // ============================================================
         private async void PrintImage()
         {
             if (!printer.IsConnected)
@@ -122,9 +323,9 @@ namespace CatPrinter
 
             Status.Text = "Drucke...";
             button2.Enabled = false;
-
             try
             {
+                // Hinweis: FlagRefresh wurde bereits bei Positions-/Textänderungen gerufen.
                 await printer.PrintGraphicsAsync(flag);
                 Status.Text = "Druck abgeschlossen";
             }
@@ -138,6 +339,9 @@ namespace CatPrinter
             }
         }
 
+        // ============================================================
+        // Papier-Vorschub (TrackBar)
+        // ============================================================
         private async void FeedPaper(int lines)
         {
             if (!printer.IsConnected)
@@ -145,7 +349,6 @@ namespace CatPrinter
                 Status.Text = "Nicht verbunden!";
                 return;
             }
-
             try
             {
                 await printer.FeedAsync(lines);
@@ -157,26 +360,70 @@ namespace CatPrinter
             }
         }
 
+        // ============================================================
+        // ComboBox Owner-Draw: saubere Anzeige nur mit Fontnamen
+        // ============================================================
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
         {
+            if (e.Index < 0) return;
+
             var comboBox = (System.Windows.Forms.ComboBox)sender;
             FontFamily? fontFamily = comboBox.Items[e.Index] as FontFamily;
-            var font = new Font(fontFamily!, comboBox.Font.SizeInPoints);
+            using var font = new Font(fontFamily!, comboBox.Font.SizeInPoints);
 
+            // Hintergrund zeichnen (Highlight bei Auswahl)
             e.DrawBackground();
-            e.Graphics.DrawString(font.Name, font, Brushes.Black, e.Bounds.X, e.Bounds.Y);
+            var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            var bg = isSelected ? SystemBrushes.Highlight : SystemBrushes.Window;
+            var fg = isSelected ? Brushes.White : Brushes.Black;
+
+            e.Graphics.FillRectangle(bg, e.Bounds);
+            e.Graphics.DrawString(font.Name, font, fg, e.Bounds.X + 4, e.Bounds.Y + 2);
+            e.DrawFocusRectangle();
         }
 
+        // ============================================================
+        // Konstruktor: Initialisierung & Settings laden
+        // ============================================================
         public Form1()
         {
             InitializeComponent();
+
+            // Flackern reduzieren
+            this.DoubleBuffered = true;
+
+            // ComboBox-Eigenschaften & Datenquelle
+            ComboBoxFonts.DropDownStyle = ComboBoxStyle.DropDownList;
+            ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
+            ComboBoxFonts.DisplayMember = "Name";
+            var families = System.Drawing.FontFamily.Families.ToList();
+            ComboBoxFonts.DataSource = families;
             ComboBoxFonts.DrawItem += ComboBoxFonts_DrawItem!;
-            ComboBoxFonts.DataSource = System.Drawing.FontFamily.Families.ToList();
+
+            // --- letzte Auswahl laden ---
+            var savedName = CatPrinterLabel.Settings.Default.LastFontFamily;
+            int idx = !string.IsNullOrEmpty(savedName)
+                      ? families.FindIndex(f => f.Name == savedName)
+                      : 0;
+            ComboBoxFonts.SelectedIndex = (idx >= 0) ? idx : 0;
+
+            var savedSize = CatPrinterLabel.Settings.Default.LastFontSize;
+            if (savedSize > 0 && savedSize >= numericUpDown1.Minimum && savedSize <= numericUpDown1.Maximum)
+                numericUpDown1.Value = savedSize;
+
+            checkBox1.Checked = CatPrinterLabel.Settings.Default.LastVertical;
+            Vertical = checkBox1.Checked;
+
+            // Anfangsrender
+            FlagRefresh();
         }
 
+        // ============================================================
+        // Form-Lebenszyklus
+        // ============================================================
         private void Form1_Load(object sender, EventArgs e)
         {
-            button2.Enabled = false;
+            button2.Enabled = false; // erst nach Verbindung drucken
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -187,10 +434,14 @@ namespace CatPrinter
             }
         }
 
+        // ============================================================
+        // UI-Events (Buttons/Controls)
+        // ============================================================
         private void button1_Click(object sender, EventArgs e)
         {
+            // Bild speichern (Vorschau ist 1bpp) – alternativ 'flag' (farbig)
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = "Data Files (*.bmp)|*.bmp";
+            dialog.Filter = "Bitmap (*.bmp)|*.bmp";
             dialog.DefaultExt = "bmp";
             dialog.AddExtension = true;
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -208,13 +459,9 @@ namespace CatPrinter
         private void buttonConnect_Click(object sender, EventArgs e)
         {
             if (printer.IsConnected)
-            {
                 DisconnectFromPrinter();
-            }
             else
-            {
                 ConnectToPrinter();
-            }
         }
 
         private void ComboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
@@ -222,41 +469,31 @@ namespace CatPrinter
             var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
             if (fontFamily != null)
             {
-                Status.Text = fontFamily.Name.ToString();
+                Status.Text = fontFamily.Name;
+                CatPrinterLabel.Settings.Default.LastFontFamily = fontFamily.Name; // Persistenz
+                CatPrinterLabel.Settings.Default.Save();
                 FlagRefresh();
             }
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
+            // aktuell nicht benutzt (Rendering erfolgt in FlagRefresh)
+            // Könnte für zusätzliche Overlays (Hilfslinien) genutzt werden.
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Vertical = checkBox1.Checked;
+            CatPrinterLabel.Settings.Default.LastVertical = Vertical; // Persistenz
+            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            FlagRefresh();
-        }
-
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (!e.Button.HasFlag(MouseButtons.Left)) return;
-
-            if (Vertical)
-            {
-                textLocation.Y = 384 - e.Location.X;
-                textLocation.X = e.Location.Y;
-            }
-            else
-            {
-                textLocation.X = e.Location.X;
-                textLocation.Y = e.Location.Y;
-            }
-
+            CatPrinterLabel.Settings.Default.LastFontSize = (int)numericUpDown1.Value; // Persistenz
+            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
@@ -282,6 +519,70 @@ namespace CatPrinter
             trackBar1.Value = 0;
             label3.Text = trackBar1.Value.ToString();
             timer1.Enabled = false;
+        }
+
+        // ============================================================
+        // Maus-Interaktion: flüssiges Ziehen der Textposition
+        // ============================================================
+        private void UpdateTextLocationFromMouse(Point mouse)
+        {
+            // Abbildung der Mausposition auf Textposition
+            // Horizontal: (X,Y) direkt
+            // Vertikal: deine bestehende Logik (90° Drehung)
+            if (Vertical)
+            {
+                textLocation.Y = 384 - mouse.X;
+                textLocation.X = mouse.Y;
+            }
+            else
+            {
+                textLocation = mouse;
+            }
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!e.Button.HasFlag(MouseButtons.Left)) return;
+
+            isDragging = true;
+            dragStartMouse = e.Location;
+            UpdateTextLocationFromMouse(e.Location);
+            FlagRefresh();
+            pictureBox1.Capture = true; // auch außerhalb weiter Ereignisse bekommen
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            // 1) Dragging: Textposition in Echtzeit aktualisieren
+            if (isDragging)
+            {
+                UpdateTextLocationFromMouse(e.Location);
+                FlagRefresh();
+                return;
+            }
+
+            // 2) Optionales Cursor-Feedback (nur horizontal genau):
+            //    Zeige Handcursor, wenn Maus über dem Text liegt.
+            if (!Vertical)
+            {
+                var rect = new RectangleF(textLocation.X, textLocation.Y, stringSize.Width, stringSize.Height);
+                pictureBox1.Cursor = rect.Contains(e.Location)
+                                     ? Cursors.Hand
+                                     : Cursors.Default;
+            }
+            else
+            {
+                // Für vertikale Drehung ist die exakte Bounding-Berechnung komplexer.
+                // Wir belassen den Standardcursor, um Verwirrung zu vermeiden.
+                pictureBox1.Cursor = Cursors.SizeAll;
+            }
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (!isDragging) return;
+            isDragging = false;
+            pictureBox1.Capture = false;
         }
     }
 }
