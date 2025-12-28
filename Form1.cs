@@ -1,20 +1,14 @@
-
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using MX10ThermalPrinter;
 
 namespace CatPrinter
 {
     public partial class Form1 : Form
     {
-
         Bitmap flag = new Bitmap(384, 384);
-        HttpClient httpClient = new HttpClient();
+        MX10Printer printer = new MX10Printer();
 
         bool Vertical = false;
         Point textLocation = new Point(0, 0);
@@ -35,7 +29,7 @@ namespace CatPrinter
                     Color c = img.GetPixel(x, y);
                     if (c.GetBrightness() >= 0.5) scan[x / 8] |= (byte)(0x80 >> (x % 8));
                 }
-                Marshal.Copy(scan, 0, (IntPtr)((long)data.Scan0 + data.Stride * y), scan.Length);
+                System.Runtime.InteropServices.Marshal.Copy(scan, 0, (IntPtr)((long)data.Scan0 + data.Stride * y), scan.Length);
             }
             bmp.UnlockBits(data);
             return bmp;
@@ -57,60 +51,110 @@ namespace CatPrinter
             pictureBox1.Image = BitmapTo1Bpp(flag);
         }
 
-        static async void PostAsync(Bitmap Bild, Label statusLabel, HttpClient client)
+        private async void ConnectToPrinter()
         {
+            Status.Text = "Verbinde mit Drucker...";
+            button2.Enabled = false;
+            buttonConnect.Enabled = false;
 
-            var formData = new MultipartFormDataContent();
-            // Add form fields
-            //formData.Add(new StringContent("John Doe"), "username");
-            //formData.Add(new StringContent("example@example.com"), "email");
-            // Add file
-            //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
-            using (var stream = new MemoryStream())
-            {
-                Bild.Save(stream, ImageFormat.Bmp);
-                var fileContent = new ByteArrayContent(stream.ToArray());
-                formData.Add(fileContent, "avatar", "file.jpg");
-            }
-            string httpResponseBody = "";
             try
             {
-                var response =  await client.PostAsync("http://catprinter.local/upload", formData);
-                response.EnsureSuccessStatusCode();
-                httpResponseBody = await response.Content.ReadAsStringAsync();
+                // Versuche zuerst mit gespeicherter MAC zu verbinden
+                string? savedMac = Properties.Settings.Default.PrinterMac;
+                bool connected = false;
+
+                if (!string.IsNullOrEmpty(savedMac))
+                {
+                    connected = await printer.ConnectByMacAsync(savedMac);
+                }
+
+                // Falls nicht erfolgreich, suche nach Drucker
+                if (!connected)
+                {
+                    connected = await printer.ScanAndConnectAsync("MX10", 10);
+                }
+
+                if (connected)
+                {
+                    Status.Text = $"Verbunden mit {printer.DeviceName} ({printer.MacAddress})";
+                    button2.Enabled = true;
+                    buttonConnect.Text = "Trennen";
+                    
+                    // Speichere MAC-Adresse
+                    if (!string.IsNullOrEmpty(printer.MacAddress))
+                    {
+                        Properties.Settings.Default.PrinterMac = printer.MacAddress;
+                        Properties.Settings.Default.Save();
+                    }
+
+                    // Setze Standard-Energie
+                    await printer.SetEnergyAsync(10000);
+                }
+                else
+                {
+                    Status.Text = "Verbindung fehlgeschlagen";
+                    buttonConnect.Enabled = true;
+                }
             }
             catch (Exception ex)
             {
-                httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+                Status.Text = $"Fehler: {ex.Message}";
+                buttonConnect.Enabled = true;
             }
-            //response.Wait();
-
-            statusLabel.Text = httpResponseBody;
         }
-        static async void PostAsyncFeed(int FeedZeilen, Label statusLabel, HttpClient client)
+
+        private void DisconnectFromPrinter()
         {
+            printer.Disconnect();
+            Status.Text = "Getrennt";
+            button2.Enabled = false;
+            buttonConnect.Text = "Verbinden";
+            buttonConnect.Enabled = true;
+        }
 
-            var formData = new MultipartFormDataContent();
-            // Add form fields
-            formData.Add(new StringContent("feed"), FeedZeilen.ToString());
-            //formData.Add(new StringContent("example@example.com"), "email");
-            // Add file
-            //var fileContent = new ByteArrayContent(File.ReadAllBytes(label1.Text));
+        private async void PrintImage()
+        {
+            if (!printer.IsConnected)
+            {
+                Status.Text = "Nicht verbunden!";
+                return;
+            }
 
-            string httpResponseBody = "";
+            Status.Text = "Drucke...";
+            button2.Enabled = false;
+
             try
             {
-                var response =  await client.PostAsync("http://catprinter.local/befehl", formData);
-                response.EnsureSuccessStatusCode();
-                httpResponseBody = await response.Content.ReadAsStringAsync();
+                await printer.PrintGraphicsAsync(flag);
+                Status.Text = "Druck abgeschlossen";
             }
             catch (Exception ex)
             {
-                httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+                Status.Text = $"Druckfehler: {ex.Message}";
             }
-            //response.Wait();
+            finally
+            {
+                button2.Enabled = true;
+            }
+        }
 
-            statusLabel.Text = httpResponseBody;
+        private async void FeedPaper(int lines)
+        {
+            if (!printer.IsConnected)
+            {
+                Status.Text = "Nicht verbunden!";
+                return;
+            }
+
+            try
+            {
+                await printer.FeedAsync(lines);
+                Status.Text = $"Vorschub: {lines} Zeilen";
+            }
+            catch (Exception ex)
+            {
+                Status.Text = $"Vorschub-Fehler: {ex.Message}";
+            }
         }
 
         private void ComboBoxFonts_DrawItem(object sender, DrawItemEventArgs e)
@@ -122,6 +166,7 @@ namespace CatPrinter
             e.DrawBackground();
             e.Graphics.DrawString(font.Name, font, Brushes.Black, e.Bounds.X, e.Bounds.Y);
         }
+
         public Form1()
         {
             InitializeComponent();
@@ -129,34 +174,17 @@ namespace CatPrinter
             ComboBoxFonts.DataSource = System.Drawing.FontFamily.Families.ToList();
         }
 
-
         private void Form1_Load(object sender, EventArgs e)
         {
+            button2.Enabled = false;
+        }
 
-            // var bmp = new Bitmap(100, 100, PixelFormat.Format1bppIndexed);
-            //pictureBox1.Image = bmp;
-            /*
-            bool Vertical=false;
-            //pictureBox1.Size = new Size(384, 384);
-            flag = new Bitmap(384, 192);
-            Graphics flagGraphics = Graphics.FromImage(flag);
-
-            flagGraphics.FillRectangle(Brushes.White, 0, 0, flagGraphics.VisibleClipBounds.Width, flagGraphics.VisibleClipBounds.Height);
-            if (Vertical) flagGraphics.TranslateTransform(32, 0);
-            if (Vertical) flagGraphics.RotateTransform(90);
-            var fontFamily = (FontFamily)ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex];
-            using (Font font1 = new Font(fontFamily.Name.ToString(), 32, FontStyle.Bold, GraphicsUnit.Pixel))
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (printer.IsConnected)
             {
-                PointF pointF1 = new PointF(0, 0);
-                flagGraphics.DrawString("Hello Welt", font1, Brushes.Black, pointF1);
+                printer.Disconnect();
             }
-            if (Vertical) flagGraphics.ResetTransform();
-            pictureBox1.Image = BitmapTo1Bpp(flag); 
-            */
-
-
-            // pictureBox1.Image = flag;
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -167,18 +195,26 @@ namespace CatPrinter
             dialog.AddExtension = true;
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-
-                //flag = BitmapTo1Bpp(flag);
                 pictureBox1.Image.Save(dialog.FileName, ImageFormat.Bmp);
                 label1.Text = dialog.FileName;
-
-
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            PostAsync(flag, Status, httpClient);
+            PrintImage();
+        }
+
+        private void buttonConnect_Click(object sender, EventArgs e)
+        {
+            if (printer.IsConnected)
+            {
+                DisconnectFromPrinter();
+            }
+            else
+            {
+                ConnectToPrinter();
+            }
         }
 
         private void ComboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
@@ -188,14 +224,11 @@ namespace CatPrinter
             {
                 Status.Text = fontFamily.Name.ToString();
                 FlagRefresh();
-
             }
-
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -222,12 +255,9 @@ namespace CatPrinter
             {
                 textLocation.X = e.Location.X;
                 textLocation.Y = e.Location.Y;
-                //textLocation.Y = textLocation.Y - (int)(stringSize.Height) / 2;
-                //textLocation.X = textLocation.X - (int)(stringSize.Width) / 2;
             }
 
             FlagRefresh();
-
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -243,7 +273,7 @@ namespace CatPrinter
         private void trackBar1_MouseUp(object sender, MouseEventArgs e)
         {
             Status.Text = trackBar1.Value.ToString();
-            PostAsyncFeed(trackBar1.Value, Status, httpClient);
+            FeedPaper(trackBar1.Value);
             timer1.Enabled = true;
         }
 
@@ -251,7 +281,7 @@ namespace CatPrinter
         {
             trackBar1.Value = 0;
             label3.Text = trackBar1.Value.ToString();
-            timer1.Enabled= false;  
+            timer1.Enabled = false;
         }
     }
 }
