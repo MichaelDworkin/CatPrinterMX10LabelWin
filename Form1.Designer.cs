@@ -110,7 +110,7 @@ namespace CatPrinter
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(650, 72);
+            label1.Location = new Point(714, 72);
             label1.Name = "label1";
             label1.Size = new Size(82, 20);
             label1.TabIndex = 4;
@@ -130,7 +130,7 @@ namespace CatPrinter
             // numericUpDown1
             // 
             numericUpDown1.AllowDrop = true;
-            numericUpDown1.Location = new Point(667, 120);
+            numericUpDown1.Location = new Point(714, 121);
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(209, 27);
             numericUpDown1.TabIndex = 6;
@@ -151,7 +151,7 @@ namespace CatPrinter
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(667, 153);
+            checkBox1.Location = new Point(714, 154);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(80, 24);
             checkBox1.TabIndex = 8;
@@ -161,10 +161,11 @@ namespace CatPrinter
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(446, 177);
+            textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            textBox1.Location = new Point(446, 200);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(239, 219);
+            textBox1.Size = new Size(239, 430);
             textBox1.TabIndex = 9;
             textBox1.Text = "Irgendwas 1234567890";
             textBox1.TextChanged += textBox1_TextChanged;
@@ -172,7 +173,7 @@ namespace CatPrinter
             // trackBar1
             // 
             trackBar1.AllowDrop = true;
-            trackBar1.Location = new Point(715, 177);
+            trackBar1.Location = new Point(714, 244);
             trackBar1.Maximum = 200;
             trackBar1.Minimum = -200;
             trackBar1.Name = "trackBar1";
@@ -192,7 +193,7 @@ namespace CatPrinter
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(785, 183);
+            label2.Location = new Point(784, 250);
             label2.Name = "label2";
             label2.Size = new Size(69, 20);
             label2.TabIndex = 11;
@@ -201,7 +202,7 @@ namespace CatPrinter
             // label3
             // 
             label3.BorderStyle = BorderStyle.FixedSingle;
-            label3.Location = new Point(785, 276);
+            label3.Location = new Point(784, 343);
             label3.Name = "label3";
             label3.Size = new Size(74, 24);
             label3.TabIndex = 12;
@@ -227,7 +228,7 @@ namespace CatPrinter
             Controls.Add(button2);
             Controls.Add(button1);
             Name = "Form1";
-            Text = "Cat Printer (Bluetooth)";
+            Text = "Cat Printer MX10 (Bluetooth)";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             canvasPanel.ResumeLayout(false);

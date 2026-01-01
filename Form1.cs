@@ -453,10 +453,26 @@ namespace CatPrinter
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Drucker trennen
             if (printer.IsConnected)
             {
                 printer.Disconnect();
             }
+
+            // KORREKTUR: Alle Settings beim Beenden speichern
+            var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
+            if (fontFamily != null)
+            {
+                CatPrinterLabel.Settings.Default.LastFontFamily = fontFamily.Name;
+            }
+            CatPrinterLabel.Settings.Default.LastFontSize = (int)numericUpDown1.Value;
+            CatPrinterLabel.Settings.Default.LastVertical = Vertical;
+            CatPrinterLabel.Settings.Default.LastText = textBox1.Text;
+            CatPrinterLabel.Settings.Default.LastTextX = textLocation.X;
+            CatPrinterLabel.Settings.Default.LastTextY = textLocation.Y;
+
+            // Einmal speichern
+            CatPrinterLabel.Settings.Default.Save();
         }
 
         // ============================================================
@@ -495,8 +511,6 @@ namespace CatPrinter
             if (fontFamily != null)
             {
                 Status.Text = fontFamily.Name;
-                CatPrinterLabel.Settings.Default.LastFontFamily = fontFamily.Name;
-                CatPrinterLabel.Settings.Default.Save();
                 FlagRefresh();
             }
         }
@@ -510,23 +524,17 @@ namespace CatPrinter
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Vertical = checkBox1.Checked;
-            CatPrinterLabel.Settings.Default.LastVertical = Vertical;
-            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            CatPrinterLabel.Settings.Default.LastFontSize = (int)numericUpDown1.Value;
-            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
-        // KORREKTUR: Text speichern bei Änderung
+        // KORREKTUR: Text nicht mehr bei jeder Änderung speichern
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            CatPrinterLabel.Settings.Default.LastText = textBox1.Text;
-            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
@@ -568,10 +576,7 @@ namespace CatPrinter
                 textLocation = mouse;
             }
 
-            // KORREKTUR: Position speichern
-            CatPrinterLabel.Settings.Default.LastTextX = textLocation.X;
-            CatPrinterLabel.Settings.Default.LastTextY = textLocation.Y;
-            CatPrinterLabel.Settings.Default.Save();
+            // Position wird beim Schließen gespeichert, nicht bei jeder Bewegung
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
