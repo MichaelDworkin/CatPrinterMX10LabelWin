@@ -61,7 +61,7 @@ namespace CatPrinterLabel {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("false")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool LastVertical {
             get {
                 return ((bool)(this["LastVertical"]));
@@ -73,13 +73,49 @@ namespace CatPrinterLabel {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Hallo Welt!")]
         public string Test {
             get {
                 return ((string)(this["Test"]));
             }
             set {
                 this["Test"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Irgendwas 1234567890")]
+        public string LastText {
+            get {
+                return ((string)(this["LastText"]));
+            }
+            set {
+                this["LastText"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int LastTextX {
+            get {
+                return ((int)(this["LastTextX"]));
+            }
+            set {
+                this["LastTextX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int LastTextY {
+            get {
+                return ((int)(this["LastTextY"]));
+            }
+            set {
+                this["LastTextY"] = value;
             }
         }
     }

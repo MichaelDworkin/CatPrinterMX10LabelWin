@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;               // Für .ToList()
@@ -32,6 +31,7 @@ namespace CatPrinter
 
         // ============================================================
         // 1-Bit-Konvertierung (schnell mit LockBits anstelle von GetPixel)
+        // KORREKTUR: Schwarze Schrift auf weißem Hintergrund
         // ============================================================
         public static Bitmap BitmapTo1Bpp(Bitmap src, byte threshold = 128)
         {
@@ -41,6 +41,12 @@ namespace CatPrinter
 
             // Erzeuge ein 1bpp-Bitmap
             Bitmap dst = new Bitmap(w, h, PixelFormat.Format1bppIndexed);
+
+            // KORREKTUR: Palette für schwarze Schrift auf weißem Hintergrund setzen
+            ColorPalette palette = dst.Palette;
+            palette.Entries[0] = Color.White;  // Index 0 = Weiß (Hintergrund)
+            palette.Entries[1] = Color.Black;  // Index 1 = Schwarz (Text)
+            dst.Palette = palette;
 
             // Quelle sperren (lesen) – wir nehmen 32bpp für einfachen Zugriff
             Rectangle rect = new Rectangle(0, 0, w, h);
@@ -81,9 +87,9 @@ namespace CatPrinter
                             // Einfache Helligkeits-Bewertung (Luma-Approximation)
                             // Wertebereich 0..255 -> Schwelle (threshold)
                             int gray = (r * 299 + g * 587 + b * 114) / 1000;
-                            bool isWhite = gray >= threshold;
+                            bool isBlack = gray < threshold;  // KORREKTUR: < statt >=
 
-                            if (isWhite == false)
+                            if (isBlack)
                                 bVal |= mask; // schwarzes Pixel setzen (1)
 
                             mask >>= 1;
@@ -236,6 +242,7 @@ namespace CatPrinter
 
         // ============================================================
         // Anzeige-Aktualisierung (Rendern + Zuschneiden + Vorschau 1bpp)
+        // KORREKTUR: Hintergrund des Panels hellgrau setzen
         // ============================================================
         public void FlagRefresh()
         {
@@ -245,6 +252,10 @@ namespace CatPrinter
 
             // Vorschau in 1bpp (schnell & sparsam)
             pictureBox1.Image = BitmapTo1Bpp(flag);
+
+            // KORREKTUR: Panel-Hintergrund hellgrau setzen
+            canvasPanel.BackColor = Color.LightGray;
+
             pictureBox1.Invalidate();                  // neu zeichnen
         }
 
@@ -383,7 +394,7 @@ namespace CatPrinter
         }
 
         // ============================================================
-        // Konstruktor: Initialisierung & Settings laden
+        // Konstruktor: Initialisierung
         // ============================================================
         public Form1()
         {
@@ -391,6 +402,16 @@ namespace CatPrinter
 
             // Flackern reduzieren
             this.DoubleBuffered = true;
+        }
+
+        // ============================================================
+        // Form-Lebenszyklus & Settings laden
+        // KORREKTUR: Alle Initialisierungen nach InitializeComponent in Load
+        // ============================================================
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            // Drucker-Button deaktivieren bis Verbindung besteht
+            button2.Enabled = false;
 
             // ComboBox-Eigenschaften & Datenquelle
             ComboBoxFonts.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -400,7 +421,7 @@ namespace CatPrinter
             ComboBoxFonts.DataSource = families;
             ComboBoxFonts.DrawItem += ComboBoxFonts_DrawItem!;
 
-            // --- letzte Auswahl laden ---
+            // --- letzte Auswahl laden und ANWENDEN ---
             var savedName = CatPrinterLabel.Settings.Default.LastFontFamily;
             int idx = !string.IsNullOrEmpty(savedName)
                       ? families.FindIndex(f => f.Name == savedName)
@@ -414,16 +435,20 @@ namespace CatPrinter
             checkBox1.Checked = CatPrinterLabel.Settings.Default.LastVertical;
             Vertical = checkBox1.Checked;
 
+            // Text aus Settings laden
+            var savedText = CatPrinterLabel.Settings.Default.LastText;
+            if (!string.IsNullOrEmpty(savedText))
+            {
+                textBox1.Text = savedText;
+            }
+
+            // Position aus Settings laden
+            var savedX = CatPrinterLabel.Settings.Default.LastTextX;
+            var savedY = CatPrinterLabel.Settings.Default.LastTextY;
+            textLocation = new Point(savedX, savedY);
+
             // Anfangsrender
             FlagRefresh();
-        }
-
-        // ============================================================
-        // Form-Lebenszyklus
-        // ============================================================
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            button2.Enabled = false; // erst nach Verbindung drucken
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -470,7 +495,7 @@ namespace CatPrinter
             if (fontFamily != null)
             {
                 Status.Text = fontFamily.Name;
-                CatPrinterLabel.Settings.Default.LastFontFamily = fontFamily.Name; // Persistenz
+                CatPrinterLabel.Settings.Default.LastFontFamily = fontFamily.Name;
                 CatPrinterLabel.Settings.Default.Save();
                 FlagRefresh();
             }
@@ -485,20 +510,23 @@ namespace CatPrinter
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Vertical = checkBox1.Checked;
-            CatPrinterLabel.Settings.Default.LastVertical = Vertical; // Persistenz
+            CatPrinterLabel.Settings.Default.LastVertical = Vertical;
             CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            CatPrinterLabel.Settings.Default.LastFontSize = (int)numericUpDown1.Value; // Persistenz
+            CatPrinterLabel.Settings.Default.LastFontSize = (int)numericUpDown1.Value;
             CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
+        // KORREKTUR: Text speichern bei Änderung
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
+            CatPrinterLabel.Settings.Default.LastText = textBox1.Text;
+            CatPrinterLabel.Settings.Default.Save();
             FlagRefresh();
         }
 
@@ -523,6 +551,7 @@ namespace CatPrinter
 
         // ============================================================
         // Maus-Interaktion: flüssiges Ziehen der Textposition
+        // KORREKTUR: Position speichern bei Änderung
         // ============================================================
         private void UpdateTextLocationFromMouse(Point mouse)
         {
@@ -538,6 +567,11 @@ namespace CatPrinter
             {
                 textLocation = mouse;
             }
+
+            // KORREKTUR: Position speichern
+            CatPrinterLabel.Settings.Default.LastTextX = textLocation.X;
+            CatPrinterLabel.Settings.Default.LastTextY = textLocation.Y;
+            CatPrinterLabel.Settings.Default.Save();
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -583,6 +617,11 @@ namespace CatPrinter
             if (!isDragging) return;
             isDragging = false;
             pictureBox1.Capture = false;
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

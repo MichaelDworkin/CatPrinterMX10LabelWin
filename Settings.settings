@@ -12,10 +12,19 @@
       <Value Profile="(Default)">24</Value>
     </Setting>
     <Setting Name="LastVertical" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">false</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Test" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">Hallo Welt!</Value>
+    </Setting>
+    <Setting Name="LastText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Irgendwas 1234567890</Value>
+    </Setting>
+    <Setting Name="LastTextX" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="LastTextY" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

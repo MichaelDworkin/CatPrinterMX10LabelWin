@@ -30,178 +30,189 @@ namespace CatPrinter
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            canvasPanel = new System.Windows.Forms.Panel();
-            pictureBox1 = new System.Windows.Forms.PictureBox();
-            button1 = new System.Windows.Forms.Button();
-            button2 = new System.Windows.Forms.Button();
-            buttonConnect = new System.Windows.Forms.Button();
-            label1 = new System.Windows.Forms.Label();
-            Status = new System.Windows.Forms.Label();
-            numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            ComboBoxFonts = new System.Windows.Forms.ComboBox();
-            checkBox1 = new System.Windows.Forms.CheckBox();
-            textBox1 = new System.Windows.Forms.TextBox();
-            trackBar1 = new System.Windows.Forms.TrackBar();
+            canvasPanel = new Panel();
+            pictureBox1 = new PictureBox();
+            button1 = new Button();
+            button2 = new Button();
+            buttonConnect = new Button();
+            label1 = new Label();
+            Status = new Label();
+            numericUpDown1 = new NumericUpDown();
+            ComboBoxFonts = new ComboBox();
+            checkBox1 = new CheckBox();
+            textBox1 = new TextBox();
+            trackBar1 = new TrackBar();
             timer1 = new System.Windows.Forms.Timer(components);
-            label2 = new System.Windows.Forms.Label();
-            label3 = new System.Windows.Forms.Label();
+            label2 = new Label();
+            label3 = new Label();
+            canvasPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
-
-            // --- Panel mit AutoScroll (für Endlospapier) ---
-            // Das Panel enthält die PictureBox. Wenn das Bild höher wird,
-            // erscheint automatisch eine Scrollbar.
-            canvasPanel.Location = new System.Drawing.Point(12, 12);
-            canvasPanel.Name = "canvasPanel";
-            canvasPanel.Size = new System.Drawing.Size(384, 384);
-            canvasPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            // 
+            // canvasPanel
+            // 
+            canvasPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             canvasPanel.AutoScroll = true;
-
-            // --- PictureBox in AutoSize ---
-            // Die PictureBox passt sich automatisch der Bildgröße an.
-            // Durch das Panel mit AutoScroll bleibt die Ansicht bedienbar.
-            pictureBox1.Location = new System.Drawing.Point(0, 0);
+            canvasPanel.BorderStyle = BorderStyle.FixedSingle;
+            canvasPanel.Controls.Add(pictureBox1);
+            canvasPanel.Location = new Point(12, 12);
+            canvasPanel.Name = "canvasPanel";
+            canvasPanel.Size = new Size(413, 618);
+            canvasPanel.TabIndex = 0;
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.Cursor = Cursors.SizeAll;
+            pictureBox1.Location = new Point(0, 0);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new System.Drawing.Size(384, 384); // Startgröße
-            pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            pictureBox1.Size = new Size(384, 600);
+            pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             pictureBox1.Paint += pictureBox1_Paint;
             pictureBox1.MouseDown += pictureBox1_MouseDown;
-            pictureBox1.MouseMove += pictureBox1_MouseMove;   // NEU: flüssiges Ziehen
-            pictureBox1.MouseUp += pictureBox1_MouseUp;       // NEU: Ende des Ziehens
-            pictureBox1.Cursor = System.Windows.Forms.Cursors.SizeAll;
-
-            // PictureBox ins Panel einsetzen
-            canvasPanel.Controls.Add(pictureBox1);
-
-            // --- Button "Speichern" ---
-            button1.Location = new System.Drawing.Point(408, 62);
+            pictureBox1.MouseMove += pictureBox1_MouseMove;
+            pictureBox1.MouseUp += pictureBox1_MouseUp;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(446, 62);
             button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(198, 40);
+            button1.Size = new Size(198, 40);
             button1.TabIndex = 1;
             button1.Text = "Speichern";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
-
-            // --- Button "Print" ---
-            button2.Location = new System.Drawing.Point(408, 108);
+            // 
+            // button2
+            // 
+            button2.Location = new Point(446, 108);
             button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(198, 40);
+            button2.Size = new Size(198, 40);
             button2.TabIndex = 2;
             button2.Text = "Print";
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
-
-            // --- Button "Verbinden/Trennen" ---
-            buttonConnect.Location = new System.Drawing.Point(408, 12);
+            // 
+            // buttonConnect
+            // 
+            buttonConnect.Location = new Point(446, 12);
             buttonConnect.Name = "buttonConnect";
-            buttonConnect.Size = new System.Drawing.Size(198, 44);
+            buttonConnect.Size = new Size(198, 44);
             buttonConnect.TabIndex = 3;
             buttonConnect.Text = "Verbinden";
             buttonConnect.UseVisualStyleBackColor = true;
             buttonConnect.Click += buttonConnect_Click;
-
-            // --- Label Dateiname ---
+            // 
+            // label1
+            // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(612, 72);
+            label1.Location = new Point(650, 72);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(82, 20);
+            label1.Size = new Size(82, 20);
             label1.TabIndex = 4;
             label1.Text = "Dateiname";
-
-            // --- Statuszeile unten ---
-            Status.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            Status.Dock = System.Windows.Forms.DockStyle.Bottom;
-            Status.Location = new System.Drawing.Point(0, 408);
+            // 
+            // Status
+            // 
+            Status.BorderStyle = BorderStyle.Fixed3D;
+            Status.Dock = DockStyle.Bottom;
+            Status.Location = new Point(0, 633);
             Status.Name = "Status";
-            Status.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            Status.Size = new System.Drawing.Size(849, 22);
+            Status.RightToLeft = RightToLeft.No;
+            Status.Size = new Size(1130, 22);
             Status.TabIndex = 5;
             Status.Text = "Nicht verbunden";
-
-            // --- Schriftgröße (NumericUpDown) ---
+            // 
+            // numericUpDown1
+            // 
             numericUpDown1.AllowDrop = true;
-            numericUpDown1.Location = new System.Drawing.Point(629, 120);
+            numericUpDown1.Location = new Point(667, 120);
             numericUpDown1.Name = "numericUpDown1";
-            numericUpDown1.Size = new System.Drawing.Size(209, 27);
+            numericUpDown1.Size = new Size(209, 27);
             numericUpDown1.TabIndex = 6;
             numericUpDown1.Value = new decimal(new int[] { 24, 0, 0, 0 });
             numericUpDown1.ValueChanged += numericUpDown1_ValueChanged;
-
-            // --- Schriftart-ComboBox ---
-            ComboBoxFonts.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            // 
+            // ComboBoxFonts
+            // 
+            ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
             ComboBoxFonts.FormattingEnabled = true;
-            ComboBoxFonts.Location = new System.Drawing.Point(629, 12);
+            ComboBoxFonts.Location = new Point(667, 12);
             ComboBoxFonts.Name = "ComboBoxFonts";
-            ComboBoxFonts.Size = new System.Drawing.Size(209, 28);
+            ComboBoxFonts.Size = new Size(209, 28);
             ComboBoxFonts.TabIndex = 7;
             ComboBoxFonts.Text = "Schriftart";
             ComboBoxFonts.SelectedIndexChanged += ComboBoxFonts_SelectedIndexChanged;
-            // DrawItem-Ereignis wird im Konstruktor gebunden (siehe Form1.cs)
-
-            // --- Vertikal-CheckBox ---
+            // 
+            // checkBox1
+            // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new System.Drawing.Point(629, 153);
+            checkBox1.Location = new Point(667, 153);
             checkBox1.Name = "checkBox1";
-            checkBox1.Size = new System.Drawing.Size(80, 24);
+            checkBox1.Size = new Size(80, 24);
             checkBox1.TabIndex = 8;
             checkBox1.Text = "Vertikal";
             checkBox1.UseVisualStyleBackColor = true;
             checkBox1.CheckedChanged += checkBox1_CheckedChanged;
-
-            // --- Textfeld für Inhalt ---
-            textBox1.Location = new System.Drawing.Point(408, 177);
+            // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(446, 177);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new System.Drawing.Size(239, 219);
+            textBox1.Size = new Size(239, 219);
             textBox1.TabIndex = 9;
             textBox1.Text = "Irgendwas 1234567890";
             textBox1.TextChanged += textBox1_TextChanged;
-
-            // --- Vorschub-TrackBar ---
+            // 
+            // trackBar1
+            // 
             trackBar1.AllowDrop = true;
-            trackBar1.Location = new System.Drawing.Point(677, 177);
+            trackBar1.Location = new Point(715, 177);
             trackBar1.Maximum = 200;
             trackBar1.Minimum = -200;
             trackBar1.Name = "trackBar1";
-            trackBar1.Orientation = System.Windows.Forms.Orientation.Vertical;
+            trackBar1.Orientation = Orientation.Vertical;
             trackBar1.RightToLeftLayout = true;
-            trackBar1.Size = new System.Drawing.Size(56, 219);
+            trackBar1.Size = new Size(56, 219);
             trackBar1.TabIndex = 10;
             trackBar1.TickFrequency = 10;
             trackBar1.Scroll += trackBar1_Scroll;
             trackBar1.MouseUp += trackBar1_MouseUp;
-
-            // --- Timer für TrackBar-Reset ---
+            // 
+            // timer1
+            // 
             timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
-
-            // --- Label "Vorschub" ---
+            // 
+            // label2
+            // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(747, 183);
+            label2.Location = new Point(785, 183);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(69, 20);
+            label2.Size = new Size(69, 20);
             label2.TabIndex = 11;
             label2.Text = "Vorschub";
-
-            // --- Anzeige des aktuellen Vorschub-Werts ---
-            label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            label3.Location = new System.Drawing.Point(747, 276);
+            // 
+            // label3
+            // 
+            label3.BorderStyle = BorderStyle.FixedSingle;
+            label3.Location = new Point(785, 276);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(74, 24);
+            label3.Size = new Size(74, 24);
             label3.TabIndex = 12;
             label3.Text = "0";
-            label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
-
-            // --- Form ---
-            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(849, 430);
-
-            // Reihenfolge: zuerst Panel (mit PictureBox), dann restliche Controls
+            label3.TextAlign = ContentAlignment.TopRight;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1130, 655);
             Controls.Add(canvasPanel);
             Controls.Add(label3);
             Controls.Add(label2);
@@ -215,12 +226,12 @@ namespace CatPrinter
             Controls.Add(buttonConnect);
             Controls.Add(button2);
             Controls.Add(button1);
-
             Name = "Form1";
             Text = "Cat Printer (Bluetooth)";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
-
+            canvasPanel.ResumeLayout(false);
+            canvasPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
