@@ -45,6 +45,7 @@ namespace CatPrinter
             timer1 = new System.Windows.Forms.Timer(components);
             label2 = new Label();
             label3 = new Label();
+            checkBoxBold = new CheckBox();
             canvasPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
@@ -79,7 +80,7 @@ namespace CatPrinter
             // 
             // button1
             // 
-            button1.Location = new Point(446, 62);
+            button1.Location = new Point(446, 72);
             button1.Name = "button1";
             button1.Size = new Size(198, 40);
             button1.TabIndex = 1;
@@ -89,7 +90,7 @@ namespace CatPrinter
             // 
             // button2
             // 
-            button2.Location = new Point(446, 108);
+            button2.Location = new Point(446, 121);
             button2.Name = "button2";
             button2.Size = new Size(198, 40);
             button2.TabIndex = 2;
@@ -110,7 +111,7 @@ namespace CatPrinter
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(714, 72);
+            label1.Location = new Point(701, 82);
             label1.Name = "label1";
             label1.Size = new Size(82, 20);
             label1.TabIndex = 4;
@@ -123,16 +124,16 @@ namespace CatPrinter
             Status.Location = new Point(0, 633);
             Status.Name = "Status";
             Status.RightToLeft = RightToLeft.No;
-            Status.Size = new Size(1130, 22);
+            Status.Size = new Size(967, 22);
             Status.TabIndex = 5;
             Status.Text = "Nicht verbunden";
             // 
             // numericUpDown1
             // 
             numericUpDown1.AllowDrop = true;
-            numericUpDown1.Location = new Point(714, 121);
+            numericUpDown1.Location = new Point(701, 121);
             numericUpDown1.Name = "numericUpDown1";
-            numericUpDown1.Size = new Size(209, 27);
+            numericUpDown1.Size = new Size(235, 27);
             numericUpDown1.TabIndex = 6;
             numericUpDown1.Value = new decimal(new int[] { 24, 0, 0, 0 });
             numericUpDown1.ValueChanged += numericUpDown1_ValueChanged;
@@ -141,9 +142,9 @@ namespace CatPrinter
             // 
             ComboBoxFonts.DrawMode = DrawMode.OwnerDrawFixed;
             ComboBoxFonts.FormattingEnabled = true;
-            ComboBoxFonts.Location = new Point(667, 12);
+            ComboBoxFonts.Location = new Point(701, 13);
             ComboBoxFonts.Name = "ComboBoxFonts";
-            ComboBoxFonts.Size = new Size(209, 28);
+            ComboBoxFonts.Size = new Size(235, 28);
             ComboBoxFonts.TabIndex = 7;
             ComboBoxFonts.Text = "Schriftart";
             ComboBoxFonts.SelectedIndexChanged += ComboBoxFonts_SelectedIndexChanged;
@@ -151,7 +152,7 @@ namespace CatPrinter
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(714, 154);
+            checkBox1.Location = new Point(701, 154);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(80, 24);
             checkBox1.TabIndex = 8;
@@ -209,11 +210,23 @@ namespace CatPrinter
             label3.Text = "0";
             label3.TextAlign = ContentAlignment.TopRight;
             // 
+            // checkBoxBold
+            // 
+            checkBoxBold.AutoSize = true;
+            checkBoxBold.Location = new Point(701, 47);
+            checkBoxBold.Name = "checkBoxBold";
+            checkBoxBold.Size = new Size(62, 24);
+            checkBoxBold.TabIndex = 13;
+            checkBoxBold.Text = "Bold";
+            checkBoxBold.UseVisualStyleBackColor = true;
+            checkBoxBold.CheckedChanged += checkBoxBold_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1130, 655);
+            ClientSize = new Size(967, 655);
+            Controls.Add(checkBoxBold);
             Controls.Add(canvasPanel);
             Controls.Add(label3);
             Controls.Add(label2);
@@ -258,5 +271,6 @@ namespace CatPrinter
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private CheckBox checkBoxBold;
     }
 }

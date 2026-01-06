@@ -19,6 +19,9 @@ namespace CatPrinter
         // --- Ausrichtung (horizontal/vertikal) ---
         bool Vertical = false;
 
+        // --- SchriftArt (0 Normal/1 Bold) ---
+        short SchriftArt = 0;
+
         // --- Position, an der der Text gezeichnet wird ---
         Point textLocation = new Point(0, 0);
 
@@ -132,7 +135,7 @@ namespace CatPrinter
             var fontFamily = ComboBoxFonts.Items[ComboBoxFonts.SelectedIndex] as FontFamily;
             using var font1 = new Font(fontFamily!.Name,
                                        Convert.ToInt32(numericUpDown1.Value),
-                                       FontStyle.Bold,
+                                       (FontStyle)SchriftArt,
                                        GraphicsUnit.Pixel);
 
             // 2) Ein erster "Messdurchlauf", um die Textgröße zu kennen
@@ -441,6 +444,11 @@ namespace CatPrinter
             {
                 textBox1.Text = savedText;
             }
+            var SchriftArt = CatPrinterLabel.Settings.Default.SchriftArt;
+            if (SchriftArt==1)
+            {
+                checkBoxBold.Checked=true;
+            }
 
             // Position aus Settings laden
             var savedX = CatPrinterLabel.Settings.Default.LastTextX;
@@ -470,6 +478,7 @@ namespace CatPrinter
             CatPrinterLabel.Settings.Default.LastText = textBox1.Text;
             CatPrinterLabel.Settings.Default.LastTextX = textLocation.X;
             CatPrinterLabel.Settings.Default.LastTextY = textLocation.Y;
+            CatPrinterLabel.Settings.Default.SchriftArt = SchriftArt;
 
             // Einmal speichern
             CatPrinterLabel.Settings.Default.Save();
@@ -627,6 +636,13 @@ namespace CatPrinter
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBoxBold_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxBold.Checked) SchriftArt = 1;
+            else SchriftArt = 0;
+                FlagRefresh();
         }
     }
 }
