@@ -132,6 +132,7 @@ namespace CatPrinter
             // 
             numericUpDown1.AllowDrop = true;
             numericUpDown1.Location = new Point(701, 121);
+            numericUpDown1.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(235, 27);
             numericUpDown1.TabIndex = 6;
