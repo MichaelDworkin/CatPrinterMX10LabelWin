@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+[README.md](https://github.com/user-attachments/files/24400710/README.md)
+>>>>>>> 820eda16f8da68b6e45519d41d624c25c7078e68
 # Cat Printer Label Editor
 
 Eine Windows-Desktop-Anwendung zum Erstellen und Drucken von Etiketten auf MX10 Thermodruckern über Bluetooth.
@@ -168,4 +172,8 @@ Bei Fragen oder Problemen öffne bitte ein [Issue](../../issues) auf GitHub.
 
 ---
 
+<<<<<<< HEAD
 **Hinweis:** Dieses Projekt ist nicht offiziell mit den Herstellern von MX10-Druckern verbunden oder von ihnen unterstützt.
+=======
+**Hinweis:** Dieses Projekt ist nicht offiziell mit den Herstellern von MX10-Druckern verbunden oder von ihnen unterstützt.
+>>>>>>> 820eda16f8da68b6e45519d41d624c25c7078e68
